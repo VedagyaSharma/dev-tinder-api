@@ -23,5 +23,4 @@ res.send():
 3️⃣ ends HTTP response
 */
 
-app.listen(3000, () => console.log("running and listening at 3000"));
 
