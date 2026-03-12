@@ -33,7 +33,44 @@ app.use("/test", (req, res) => {
     res.send("hello from test");
 });
 
-// wild card
+/*
+Route pattern   → /users/:id
+Request URL     → /users/profile
+    users  → users ✔
+    :id    → profile ✔
+    Because :id means: match ANY string
+*/
+
+// IMP - after 5.x.x express ?, +, * do not work directly
+// wild card * (deprecated) , ? (optional), : (param), () regex, + (one or more) etc
+app.get('/users/:id', (req, res) => {
+    res.send(`User ID: ${req.params.id}`);
+});
+
+app.get('/users/profile', (req, res) => {
+    res.send("User profile");
+});
+
+app.get(/^\/ab+c$/, (req, res) => {
+    res.send("matched ab+c pattern");
+});
+
+
+// app.get('/file/:name(*)', (req, res) => {
+//     res.send(req.params);
+// });
+
+// app.get('/ab?c', (req, res) => {
+//     res.send(req.params.id || "No ID");
+// })
+
+// app.get("/user/:id(\\d+)", (req, res) => {
+//     res.send({
+//         message: "Only numeric IDs allowed",
+//         id: req.params.id
+//     });
+// });
+
 app.use("/", (req, res) => {
     res.send("hello from dashboard");
 });
