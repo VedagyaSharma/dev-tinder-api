@@ -42,5 +42,6 @@ app.use("/", (err, req, res, next) => { // 2 param , 3 param, 4 param
     }
 })
 
+// Error middleware runs ONLY if next(err) is called OR an error is thrown.
 app.listen(3000, () => console.log("running and listening at 3000"));
 
