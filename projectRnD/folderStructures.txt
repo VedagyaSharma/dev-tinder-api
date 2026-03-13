@@ -1,0 +1,123 @@
+backend-platform
+│
+├── services
+│   │
+│   ├── auth-service
+│   ├── user-service
+│   ├── match-service
+│   └── notification-service
+│
+├── shared
+│   ├── logger
+│   ├── error-handler
+│   ├── auth-utils
+│   └── database
+│
+├── infrastructure
+│   ├── docker
+│   ├── kubernetes
+│   ├── terraform
+│   └── monitoring
+│
+└── scripts
+
+
+
+user-service
+│
+├── src
+│   │
+│   ├── app.js
+│   ├── server.js
+│   │
+│   ├── config
+│   │   ├── database.js
+│   │   ├── env.js
+│   │   └── redis.js
+│   │
+│   ├── routes
+│   │   ├── index.routes.js
+│   │   └── user.routes.js
+│   │
+│   ├── controllers
+│   │   └── user.controller.js
+│   │
+│   ├── services
+│   │   └── user.service.js
+│   │
+│   ├── repositories
+│   │   └── user.repository.js
+│   │
+│   ├── models
+│   │   └── user.model.js
+│   │
+│   ├── middleware
+│   │   ├── auth.middleware.js
+│   │   ├── rbac.middleware.js
+│   │   ├── validation.middleware.js
+│   │   └── error.middleware.js
+│   │
+│   ├── validators
+│   │   └── user.validator.js
+│   │
+│   ├── utils
+│   │   ├── logger.js
+│   │   ├── responseFormatter.js
+│   │   └── asyncHandler.js
+│   │
+│   ├── events
+│   │   ├── producers
+│   │   │   └── userCreated.producer.js
+│   │   └── consumers
+│   │       └── notification.consumer.js
+│   │
+│   ├── jobs
+│   │   └── cleanup.job.js
+│   │
+│   └── tests
+│       ├── unit
+│       └── integration
+│
+├── Dockerfile
+├── package.json
+└── .env
+
+
+infrastructure
+│
+├── docker
+│   └── docker-compose.yml
+│
+├── kubernetes
+│   ├── deployment.yaml
+│   └── service.yaml
+│
+├── terraform
+│   └── cloud infrastructure
+│
+└── monitoring
+    ├── prometheus
+    └── grafana
+
+API Gateway
+      ↓
+user-service
+      ↓
+Route
+      ↓
+Auth middleware
+      ↓
+Validation middleware
+      ↓
+Controller
+      ↓
+Service
+      ↓
+Repository
+      ↓
+Database
+      ↓
+Response
+
+
+
