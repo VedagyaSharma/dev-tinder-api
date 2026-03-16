@@ -1,47 +1,31 @@
 const express = require('express');
 const app = express();
-const {adminAuth, userAuth} = require("./middlewares/auth");
+const {connectDB} = require('./config/database');
+const {User} = require("./models/user");
 
-// greedy route so req go through it eg /admin/abc
-// file is in auth.js
-
-app.use("/admin", adminAuth);
-
-app.use("/", (err, req, res, next) => { // 2 param , 3 param, 4 param
-    if(err) {
-        // logging errors
-        // catch futther by next(err) and hide sensitive info
-        res.status(500).send("something is wrong");
+app.post("/signup", async (req, res) => {
+    const userObj = {
+        firstName: "Ronaldo",
+        lastName: "McCullum",
+        emailId: "rm@sharma.com",
+        password: "rm@123",
+        age: 26
     }
-})
 
-// middlewares .use() and roles
-// const authMiddleware = () => {}
-// const handler = () => {}
-// app.get("/profile", authMiddleware, handler)
-
-app.get("/admin/getUserData", (req, res, next) => { 
-    // logic of fetching all data (auth + RBAC) - Middlewares
-
-    // const token = req.body?.token;
-    // const token = "Bearer xyz";
-    // const isAdminAuthorized = token === "Bearer xyz";
-    // if(isAdminAuthorized) {
-
-    // }
-    throw new Error("hhhhhhhh");
-    res.send("all data sent")
-})
-
-// error handling - central, async wrapper etc
-app.use("/", (err, req, res, next) => { // 2 param , 3 param, 4 param
-    if(err) {
-        // logging errors
-        // catch futther by next(err) and hide sensitive info
-        res.status(500).send("something is wrong");
+    try {
+        // creating a new instance of user model
+        const user = new User(userObj);
+        await user.save();
+        res.status(201).json("user inserted successfully")
+    } catch (error) {
+        res.status(400).json("error savig user data : " + error.message);
     }
-})
+});
 
-// Error middleware runs ONLY if next(err) is called OR an error is thrown.
-app.listen(3000, () => console.log("running and listening at 3000"));
+connectDB().then(() => {
+    console.log("db connected successfully")
+    app.listen(3000, () => console.log("running and listening at 3000"));
+})
+        .catch((err) => console.log("db cannot be connected"))
+
 
