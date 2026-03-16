@@ -10,17 +10,17 @@ app.use(express.json());
 app.post("/signup", async (req, res) => {
 console.log(req.body); // from raw postman
 // await User.create(req.body);
-    const userObj = {
-        firstName: "Ronaldo",
-        lastName: "McCullum",
-        emailId: "rm@sharma.com",
-        password: "rm@123",
-        age: 26
-    }
+    // const userObj = {
+    //     firstName: "Ronaldo",
+    //     lastName: "McCullum",
+    //     emailId: "rm@sharma.com",
+    //     password: "rm@123",
+    //     age: 26
+    // }
 
     try {
         // creating a new instance of user model
-        const user = new User(userObj);
+        const user = new User(req.body);
         await user.save();
         res.status(201).json("user inserted successfully")
     } catch (error) {
@@ -75,7 +75,25 @@ app.delete("/user", async (req, res) => {
 app.patch("/user", async (req, res) => {
     const userId = req.body.userId;
     const data = req.body; // whole entry - doc
+
+    
     try {
+        const ALLOWED_UPDATES = [
+            "photoUrl", "about", "gender", "userId", "skills"
+        ];
+
+        const isUpdateAllowed = Object.keys(data).every((key) => 
+            ALLOWED_UPDATES.includes(key)
+        );
+    
+        if(!isUpdateAllowed) {
+            throw new Error("not allowed to update");
+        }
+
+        if(data?.skills.length > 10) {
+            throw new Error("max skills selected already");
+        }
+
         await User.findByIdAndUpdate({ _id: userId }, data, {runValidators: true});
         res.send("user updated successfully");
     } catch (error) {
