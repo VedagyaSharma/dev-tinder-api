@@ -14,8 +14,10 @@ const userSchema = new mongoose.Schema({
     },
     emailId: {
         type: String,
-        required: true,
-        index: true
+        unique: true,      // prevents duplicate emails
+        index: true,
+        lowercase: true,   // normalize emails
+        trim: true
         // match using joi or regex
     },
     password: {
