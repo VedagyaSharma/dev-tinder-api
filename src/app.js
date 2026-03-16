@@ -76,10 +76,10 @@ app.patch("/user", async (req, res) => {
     const userId = req.body.userId;
     const data = req.body; // whole entry - doc
     try {
-        await User.findByIdAndUpdate({ _id: userId }, data);
+        await User.findByIdAndUpdate({ _id: userId }, data, {runValidators: true});
         res.send("user updated successfully");
     } catch (error) {
-        res.status(400).json("error deleting user (by id) data : " + error.message);
+        res.status(400).json("error updating user (by id) data : " + error.message);
     }
 })
 
