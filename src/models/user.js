@@ -33,8 +33,8 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true,
-        minLength: 4,
-        maxLength: 50,
+        select: false, // when db ops use .select("+passsword") to add otherwise stays hidden
+        minLength: 8,
         validate(value) {
             if(!validator.isStrongPassword(value)) { // one cap one small one symbol one num
                 throw new Error ("enter strong password")

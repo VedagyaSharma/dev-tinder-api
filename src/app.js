@@ -2,13 +2,15 @@ const express = require('express');
 const app = express();
 const {connectDB} = require('./config/database');
 const {User} = require("./models/user");
-const { get } = require('mongoose');
+const {validateSingupData} = require('./utils/validation');
+const bcrypt = require('bcrypt');
 
 app.use(express.json());
 
 // sample signup
 app.post("/signup", async (req, res) => {
 console.log(req.body); // from raw postman
+
 // await User.create(req.body);
     // const userObj = {
     //     firstName: "Ronaldo",
@@ -19,12 +21,51 @@ console.log(req.body); // from raw postman
     // }
 
     try {
-        // creating a new instance of user model
-        const user = new User(req.body);
+        // validation of data from req.body
+        validateSingupData(req);
+
+        // encrypt pw and then store in db
+        const {password, firstName, lastName, emailId, age} = req.body;
+        const saltRounds = 10; // 10 to 12
+        const passwordHash = await bcrypt.hash(password, saltRounds); 
+        console.log(passwordHash);
+
+        // creating a new instance of user model 
+        const user = new User({
+            firstName, lastName, emailId, password: passwordHash, age
+        }); // req.body can be corrupted
+
         await user.save();
         res.status(201).json("user inserted successfully")
     } catch (error) {
         res.status(400).json("error saving user data : " + error.message);
+    }
+});
+
+// login
+app.post("/login", async (req, res) => {
+    try {
+        // validateSingupData(req); -> will check everything
+        // console.log(req.body.emailId);
+        const {emailId, password} = req.body;
+        
+        const user = await User.findOne({ emailId }).select("+password");
+        console.log("login user mail find -- ", user);
+        if(!user) {
+            throw new Error ("email ID is not present");
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if(isPasswordValid) {
+            res.status(200).json({ message: "Login successful" });
+        }
+        else {
+            throw new Error("Password or email incorrect")
+        }
+
+    } catch (error) {
+        res.status(400).send("ERROR " + error.message);
     }
 });
 
