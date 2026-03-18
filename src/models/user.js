@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+
 // make schema and then export the model
 
 const userSchema = new mongoose.Schema({
@@ -81,6 +84,24 @@ const userSchema = new mongoose.Schema({
     versionKey: false // __v field
 }
 );
+
+userSchema.methods.getJWT = function () {
+    const user = this; // arrow function does not have their own this
+
+    const token = jwt.sign({ _id: userSchema._id }, "DEV@Tinder$790", {
+        expiresIn: "3d"
+    });
+    return token;
+}
+
+userSchema.methods.validatePassword = async function (pwInputByUser) {
+    const user = this;
+    const passwordHash = user.password; // obv pw are stored in hash
+    const isPasswordValid = await bcrypt.compare(pwInputByUser, passwordHash);
+
+    return isPasswordValid;
+}
+
 // database = devTinder, collection - User, entries/rows = documents
 
 const User = mongoose.model("User", userSchema);

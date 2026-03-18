@@ -60,10 +60,12 @@ app.post("/login", async (req, res) => {
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
+        const isPasswordValidFromMethod = await user.validatePassword();
 
         if(isPasswordValid) {
 
             // Create a JWT Access Token
+            const tokenFromMethod = await user.getJWT();
             // hiding userId under this token
             const token = jwt.sign({ _id: user._id }, "DEV@Tinder$790", {
                 expiresIn: "3d" });
