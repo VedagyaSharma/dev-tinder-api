@@ -4,8 +4,11 @@ const {connectDB} = require('./config/database');
 const {User} = require("./models/user");
 const {validateSingupData} = require('./utils/validation');
 const bcrypt = require('bcrypt');
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
 
 app.use(express.json());
+app.use(cookieParser());
 
 // sample signup
 app.post("/signup", async (req, res) => {
@@ -50,7 +53,7 @@ app.post("/login", async (req, res) => {
         const {emailId, password} = req.body;
         
         const user = await User.findOne({ emailId }).select("+password");
-        console.log("login user mail find -- ", user);
+        // console.log("login user mail find -- ", user);
         if(!user) {
             throw new Error ("email ID is not present");
         }
@@ -58,6 +61,15 @@ app.post("/login", async (req, res) => {
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if(isPasswordValid) {
+
+            // Create a JWT Token
+            // hiding userId under this token
+            const token = jwt.sign({ _id: user._id }, "DEV@Tinder$790");
+            console.log(token);
+
+            // Add the token to cookie and send the response back to user
+            res.cookie("token", token);
+
             res.status(200).json({ message: "Login successful" });
         }
         else {
@@ -67,6 +79,38 @@ app.post("/login", async (req, res) => {
     } catch (error) {
         res.status(400).send("ERROR " + error.message);
     }
+});
+
+// cookie use api 
+app.get("/profile", async (req, res) => {
+
+    try {
+        // use cookie-parser
+        const cookies = req.cookies;
+        console.log(cookies);
+
+        const { token } = cookies;
+        if(!token) {
+            throw new Error ("invalid token")
+        }
+
+        // validate token
+        const decodedMessage = jwt.verify(token, "DEV@Tinder$790");
+        console.log(decodedMessage);
+        
+        const { _id } = decodedMessage;
+        console.log("logged in user - ", _id);
+
+        const user = await User.findById(_id); 
+        if(!user) {
+            throw new Error ("please login again");
+        }
+
+        res.send("real cookie user -- " + user);
+    } catch (error) {
+        res.status(400).send("ERROR -- ", error.message);
+    }
+
 });
 
  // Get user by email
