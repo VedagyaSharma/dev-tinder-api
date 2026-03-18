@@ -85,6 +85,7 @@ const userSchema = new mongoose.Schema({
 }
 );
 
+// schema methods for cleaner main files
 userSchema.methods.getJWT = function () {
     const user = this; // arrow function does not have their own this
 

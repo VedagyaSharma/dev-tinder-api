@@ -14,6 +14,8 @@
 const jwt = require('jsonwebtoken');
 const { User } = require('../models/user');
 // use JTI for tracking and blacklisting
+// generate refresh token and store in Redis store
+// rotate JWT refresh tokens similarly
 
 const userAuth = async (req, res, next) => {
     try {
