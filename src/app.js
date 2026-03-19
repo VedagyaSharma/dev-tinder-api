@@ -1,115 +1,18 @@
 const express = require('express');
 const app = express();
-const {connectDB} = require('./config/database');
-const { User } = require("./models/user");
-const {validateSingupData} = require('./utils/validation');
-const bcrypt = require('bcrypt');
+const { connectDB } = require('./config/database');
 const cookieParser = require('cookie-parser');
-const jwt = require('jsonwebtoken');
-const { userAuth } = require('./middlewares/auth');
+const { authRouter} = require('./routes/auth');
+const { requestsRouter } = require('./routes/requests');
+const  { profileRouter } = require('./routes/profile');
+
 
 app.use(express.json());
 app.use(cookieParser());
 
-// sample signup
-app.post("/signup", async (req, res) => {
-console.log(req.body); // from raw postman
-
-// await User.create(req.body);
-    // const userObj = {
-    //     firstName: "Ronaldo",
-    //     lastName: "McCullum",
-    //     emailId: "rm@sharma.com",
-    //     password: "rm@123",
-    //     age: 26
-    // }
-
-    try {
-        // validation of data from req.body
-        validateSingupData(req);
-
-        // encrypt pw and then store in db
-        const {password, firstName, lastName, emailId, age} = req.body;
-        const saltRounds = 10; // 10 to 12
-        const passwordHash = await bcrypt.hash(password, saltRounds); 
-        console.log(passwordHash);
-
-        // creating a new instance of user model 
-        const user = new User({
-            firstName, lastName, emailId, password: passwordHash, age
-        }); // req.body can be corrupted
-
-        await user.save();
-        res.status(201).json("user inserted successfully")
-    } catch (error) {
-        res.status(400).json("error saving user data : " + error.message);
-    }
-});
-
-// login
-app.post("/login", async (req, res) => {
-    try {
-        // validateSingupData(req); -> will check everything
-        // console.log(req.body.emailId);
-        const {emailId, password} = req.body;
-        
-        const user = await User.findOne({ emailId }).select("+password");
-        // console.log("login user mail find -- ", user);
-        if(!user) {
-            throw new Error ("email ID is not present");
-        }
-
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        const isPasswordValidFromMethod = await user.validatePassword(password);
-
-        if(isPasswordValid) {
-
-            // Create a JWT Access Token
-            const tokenFromMethod = await user.getJWT();
-            // hiding userId under this token
-            const token = jwt.sign({ _id: user._id }, "DEV@Tinder$790", {
-                expiresIn: "3d" });
-            console.log(token);
-
-            // Refresh Token??
-
-            // Add the token to cookie and send the response back to user
-            res.cookie("token", token, { httpOnly: true, expires: 
-                new Date(Date.now() + 8 * 3600000) // expires in 8 hours
-            }); // secure: true, sameSite: "stict"
-
-            res.status(200).json({ message: "Login successful" });
-        }
-        else {
-            throw new Error("Password or email incorrect")
-        }
-
-    } catch (error) {
-        res.status(400).send("ERROR " + error.message);
-    }
-});
-
-// cookie use api 
-app.get("/profile", userAuth, async (req, res) => { // next() in userAuth(user attached) will run this (req, res) => {}
-
-    try {
-        const user = req.user;
-        res.send("real cookie user -- " + user);
-    } catch (error) {
-        res.status(400).send("ERROR -- ", error.message);
-    }
-
-});
-
-app.post("/sendConnectionRequest", userAuth, async (req, res) => {
-    try {
-        const user = req.user;
-        // sending a connection request
-        res.send(user.firstName + " sent a connection request");
-    } catch (error) {
-        
-    }
-})
+app.use('/', authRouter);
+app.use('/', requestsRouter);
+app.use('/', profileRouter);
 
 //  // Get user by email
 // app.get("/user", async (req, res) => {
