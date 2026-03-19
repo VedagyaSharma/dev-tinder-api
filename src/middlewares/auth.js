@@ -14,32 +14,43 @@
 const jwt = require('jsonwebtoken');
 const { User } = require('../models/user');
 // use JTI for tracking and blacklisting
-// generate refresh token and store in Redis store
-// rotate JWT refresh tokens similarly
+// RBAC implement - role comes from JWT payload
+// tenant middleware can be diff - also comes in JWT payload
+/*
+    router.post(
+    "/listing",         // resource (RBAC strict) a host puts up so others can view/book it
+    auth,               // who are you
+    tenantMiddleware,   // which tenant
+    authorize("host"),  // what can you do
+    createListing
+);
+*/
 
 const userAuth = async (req, res, next) => {
     try {
-        // Read the token fron request cookies
-        const { token } = req.cookies;
-        if(!token) {
-            throw new Error ("token is not valid");
+        // Read the token fron request cookies / req.headers.authorization
+        const token =
+            req.cookies.token ||
+            req.headers.authorization?.split(" ")[1];
+        if (!token) {
+            throw new Error("token is not valid");
         }
 
         // validate token
         const decodedObj = jwt.verify(token, "DEV@Tinder$790");
-        const {_id} = decodedObj;
+        const { _id } = decodedObj;
 
         // find the user 
         const user = await User.findById(_id).select("-password");
-        if(!user) {
-            throw new Error ("user not found");
+        if (!user) {
+            throw new Error("user not found");
         }
 
         req.user = user; // attached to request
 
         next();
     } catch (error) {
-        res.status(400).send("ERR - " + error.message);
+        res.status(401).send("ERR - " + error.message);
     }
 }
 
