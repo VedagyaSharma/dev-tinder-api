@@ -4,14 +4,14 @@ const { User } = require("../models/user");
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const cookieParser = require('cookie-parser');
-const { validateSingupData } = require('../utils/validation')
+const { validateSingupData } = require('../utils/validation');
 
 app.use(cookieParser());
 
 
 const authRouter = express.Router();
 
-// sample signup
+    // signup
 authRouter.post("/signup", async (req, res) => {
     console.log(req.body); // from raw postman
     
@@ -53,10 +53,14 @@ authRouter.post("/login", async (req, res) => {
         // console.log(req.body.emailId);
         const {emailId, password} = req.body;
         
+        if(!emailId || !password) {
+            return res.status(400).send("email and password required");
+        }
+
         const user = await User.findOne({ emailId }).select("+password");
         // console.log("login user mail find -- ", user);
         if(!user) {
-            throw new Error ("email ID is not present");
+            throw new Error ("Invalid credentials");
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -74,8 +78,8 @@ authRouter.post("/login", async (req, res) => {
             // Refresh Token??
 
             // Add the token to cookie and send the response back to user
-            res.cookie("token", token, { httpOnly: true, expires: 
-                new Date(Date.now() + 8 * 3600000) // expires in 8 hours
+            res.cookie("token", token, { httpOnly: true, secure: true, expires: 
+                new Date(Date.now() + 72 * 3600000) // expires in 8 hours
             }); // secure: true, sameSite: "stict"
 
             res.status(200).json({ message: "Login successful" });
@@ -89,6 +93,19 @@ authRouter.post("/login", async (req, res) => {
     }
 });
 
+    // logout
+authRouter.post("/logout", async (req, res) => {
+    try {
+        // remove the cookie token / nullify and expire immedital
+        res.cookie("token", null, {
+            expires: new Date(Date.now()) // remove JTI and redis session store
+        });
+
+        res.status(200).send("user logged out successfully")
+    } catch (error) {
+        res.status(401).send("ERROR -- " + error.message);
+    }
+});
 
 
 module.exports = { authRouter }
