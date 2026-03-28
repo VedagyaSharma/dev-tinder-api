@@ -69,9 +69,9 @@ authRouter.post("/login", async (req, res) => {
         if(isPasswordValid) {
 
             // Create a JWT Access Token
-            const tokenFromMethod = await user.getJWT();
+            // const tokenFromMethod = await user.getJWT();
             // hiding userId under this token
-            const token = jwt.sign({ _id: user._id }, "DEV@Tinder$790", {
+            const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
                 expiresIn: "3d" });
             console.log(token);
 

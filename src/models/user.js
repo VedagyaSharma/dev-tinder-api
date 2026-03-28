@@ -4,7 +4,6 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
 // make schema and then export the model
-
 const userSchema = new mongoose.Schema({
     firstName: {
         type: String,
@@ -22,8 +21,8 @@ const userSchema = new mongoose.Schema({
     emailId: {
         type: String,
         required: true,
-        unique: true,      // prevents duplicate emails
-        index: true,
+        unique: true,      // is not validation, just index via unique true
+        // handle duplicate error in service layer
         lowercase: true,   // normalize emails
         trim: true,
         validate(value) {
@@ -52,8 +51,13 @@ const userSchema = new mongoose.Schema({
     },
     gender: {
         type: String,
+        enum: {
+            values: ["male", "feamle", "other"],
+            message: `{VALUE} is not a valid gender type`
+        },
+        // can skip validate func now
         validate(value) { // explicitely call this with options runValidator (only runs in .save() by default) in API
-            if( !["male", "females", "other"].includes(value) ) {
+            if( !["male", "female", "other"].includes(value) ) {
                 throw new Error ("Gender data is not valid")
             }
         },
@@ -72,12 +76,18 @@ const userSchema = new mongoose.Schema({
         default: "This is a default about of the user!"
     },
     skills: {
-        type: [String]
+        type: [String],
+        validate: v => v.length <= 10
+    },
+    isActive: {
+        type: Boolean,
+        default: true
+    },
+    role: {
+        type: String,
+        enum: ["user", "admin"],
+        default: "user"
     }
-    // roles: {
-    //     enum: ["user"],
-    //     default: "user"
-    // }
 },
 {
     timestamps: true,
@@ -85,11 +95,13 @@ const userSchema = new mongoose.Schema({
 }
 );
 
-// schema methods for cleaner main files
+userSchema.index({ firstName: 1, lastName: 1 });
+
+// schema methods for cleaner main files -- this == user
 userSchema.methods.getJWT = function () {
     const user = this; // arrow function does not have their own this
 
-    const token = jwt.sign({ _id: userSchema._id }, "DEV@Tinder$790", {
+    const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
         expiresIn: "3d"
     });
     return token;
@@ -102,6 +114,17 @@ userSchema.methods.validatePassword = async function (pwInputByUser) {
 
     return isPasswordValid;
 }
+
+// Hash password automatically from service layer / middleware call
+// userSchema.pre("save", async function (next) {
+//     if (!this.isModified("password")) return next();
+
+//     this.password = await bcrypt.hash(this.password, 10);
+//     next();
+// });
+
+// Add compound indexes+uniqueness - Create an index on emailId field in ascending order
+// userSchema.index({ emailId: 1 }, { unique: true });
 
 // database = devTinder, collection - User, entries/rows = documents
 

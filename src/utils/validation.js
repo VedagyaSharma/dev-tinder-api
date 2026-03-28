@@ -11,11 +11,11 @@ const validateSingupData = (req) => {
         throw new Error("Last name must be at least 4 characters");
     }
 
-    if(!validator.isEmail(emailId)) {
+    if(!validator.isEmail(body.emailId)) {
         throw new Error ("email is not valid");
     }
 
-    if(!validator.isStrongPassword(password)) {
+    if(!validator.isStrongPassword(body.password)) {
         throw new Error ("pls enter a strong password");
     }
 
