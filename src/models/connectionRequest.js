@@ -27,7 +27,7 @@ const connectionRequestSchema = new mongoose.Schema({
 
 // ConnectionRequest.fing({fromuserId: 87yehfr983hyefr})
 // atomic upsert can still race without a unique index under extreme concurrency
-connectionRequestSchema.index({ fromUserId: 1, toUserId: 1 }, { unique: true });
+connectionRequestSchema.index({ fromUserId: 1, toUserId: 1, status: 1 }, { unique: true });
 
 /*
     connectionRequestSchema.index(

@@ -3,6 +3,8 @@ const requestsRouter = express.Router();
 const { userAuth } = require('../middlewares/auth')
 const { ConnectionRequest } = require('../models/connectionRequest');
 const { User } = require('../models/user');
+const { default: mongoose } = require('mongoose');
+
 
 requestsRouter.post("/request/send/:status/:toUserId", userAuth, async (req, res) => {
     // console.log("request send api hit");
@@ -69,6 +71,8 @@ requestsRouter.post("/request/send/:status/:toUserId", userAuth, async (req, res
         🔥 THIS LINE GOES HERE
             const [user1, user2] = [fromUserId.toString(), toUserId.toString()].sort();
             
+            Insert a request ONLY if it doesn’t already exis
+
             const connectionRequest = await ConnectionRequest.findOneAndUpdate(
             {
                 fromUserId,
@@ -109,28 +113,56 @@ requestsRouter.post("/request/review/:status/:requestId", userAuth, async (req, 
         const loggedInUser = req.user;
         const { status, requestId } = req.params;
 
+        // normalize inputs
+        status = status.toLowerCase().trim();
+
+        // validate ObjectId
+        if(!mongoose.Types.ObjectId.isValid(requestId)) {
+            return res.status(400).json({
+                message: "Invalid request ID"
+            });
+        }
+
+        // validate status
         const allowedStatus = ["accepted", "rejected"];
         if(!allowedStatus.includes(status)) {
             return res.status(400).json({
                 message: "invalid status type " + status
             });
         }
-        // vedTest3 sent to vedTest2
-        const connectionRequest = await ConnectionRequest.findOne({
+        // vedTest3 (sender) sent to vedTest2 (reviewer)
+
+        // race condition solved by fundOneAndUpdate and $set - controlled state transition
+        const updatedConnectionRequestStatus = await ConnectionRequest.findOneAndUpdate({
             _id: requestId,
             toUserId: loggedInUser._id,
-            status: "interested"
+            status: "interested" // enforce transition
+        }, 
+        {
+            $set: { status } // accepted ot rejected
+        },
+        {
+            new: true // return updated doc
         });
 
-        if( !connectionRequest ) {
-            return res.status(404).json({message: "connection not found"});
+        if( !updatedConnectionRequestStatus ) {
+            return res.status(404).json({message: "connection request not found"});
         }
 
-        connectionRequest.status = status; // from params
+        // covered in findOneAndUpdate to avoid race conditions from save()
+        // updatedConnectionRequestStatus.status = status; 
+        // const data = await updatedConnectionRequestStatus.save(); 
 
-        const data = await connectionRequest.save();
-        
-        res.json({mesaage: "connection request " + status + data});
+        // Clean response
+        return res.status(200).json({
+            message: `Connection request ${status}`,
+            data: {
+                id: updatedConnectionRequestStatus._id,
+                fromUserId: updatedConnectionRequestStatus.fromUserId,
+                toUserId: updatedConnectionRequestStatus.toUserId,
+                status: updatedConnectionRequestStatus.status
+            }
+        });
 
         // ved => other (now logged in user is other as they will review)
         // status (review is only possible after intersted status)
