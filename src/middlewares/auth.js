@@ -51,6 +51,7 @@ const userAuth = async (req, res, next) => {
                 throw new Error("user not found");
             }
     
+            // V IMP
             req.user = user; // user attached to request object, can attach payload too
     
             next();

@@ -1,15 +1,18 @@
 const mongoose = require('mongoose');
+const { User } = require('./user');
 
 const connectionRequestSchema = new mongoose.Schema({
 
     // sender (logged in via token decoded)
     fromUserId: {
         type: mongoose.SchemaTypes.ObjectId,
+        ref: User, // reference to the user collection
         required: true
     },
     // receiver
     toUserId: {
         type: mongoose.SchemaTypes.ObjectId,
+        ref: User,
         required: true
     },
     status: {

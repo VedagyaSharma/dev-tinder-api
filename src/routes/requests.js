@@ -114,7 +114,7 @@ requestsRouter.post("/request/review/:status/:requestId", userAuth, async (req, 
         const { status, requestId } = req.params;
 
         // normalize inputs
-        status = status.toLowerCase().trim();
+        // status = status.toLowerCase().trim();
 
         // validate ObjectId
         if(!mongoose.Types.ObjectId.isValid(requestId)) {
@@ -139,7 +139,7 @@ requestsRouter.post("/request/review/:status/:requestId", userAuth, async (req, 
             status: "interested" // enforce transition
         }, 
         {
-            $set: { status } // accepted ot rejected
+            $set: { status } // accepted or rejected
         },
         {
             new: true // return updated doc

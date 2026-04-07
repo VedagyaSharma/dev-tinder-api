@@ -10,10 +10,12 @@ app.use(cookieParser());
 const { authRouter} = require('./routes/auth');
 const { requestsRouter } = require('./routes/requests');
 const { profileRouter } = require('./routes/profile');
+const { userRouter } = require('./routes/user');
 
 app.use('/', authRouter);
 app.use('/', requestsRouter);
 app.use('/', profileRouter);
+app.use('/', userRouter);
 
 //  // Get user by email
 // app.get("/user", async (req, res) => {
