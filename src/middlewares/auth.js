@@ -28,28 +28,36 @@ const { User } = require('../models/user');
 
 const userAuth = async (req, res, next) => {
     try {
+        console.log("userAuth middleware hit"); 
+        console.log("next is:", next);
         // Read the token fron request cookies / req.headers.authorization
         const token =
             req.cookies.token ||
             req.headers.authorization?.split(" ")[1];
-        if (!token) {
-            throw new Error("token is not valid");
+        
+        try {
+            if(!token) {
+                throw new Error("token is not valid");
+            }
+    
+            // validate token
+            const decodedObj = jwt.verify(token, process.env.JWT_SECRET);
+            console.log("DECODED OBJ -- ", decodedObj);
+            const { _id } = decodedObj;
+    
+            // find the user 
+            const user = await User.findById(_id).select("-password");
+            if (!user) {
+                throw new Error("user not found");
+            }
+    
+            req.user = user; // user attached to request object, can attach payload too
+    
+            next();
+    
+        } catch(err) {
+            res.status(401).send("ERR " + err.message);
         }
-
-        // validate token
-        const decodedObj = jwt.verify(token, process.env.JWT_SECRET);
-        console.log("DECODED OBJ -- ", decodedObj);
-        const { _id } = decodedObj;
-
-        // find the user 
-        const user = await User.findById(_id).select("-password");
-        if (!user) {
-            throw new Error("user not found");
-        }
-
-        req.user = user; // user attached to request object, can attach payload too
-
-        next();
 
     } catch (error) {
         res.status(401).send("ERR - " + error.message);
