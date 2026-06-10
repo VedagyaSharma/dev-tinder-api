@@ -79,7 +79,7 @@ authRouter.post("/login", async (req, res) => {
 
             // Add the token to cookie and send the response back to user
             res.cookie("token", token, { httpOnly: true, secure: true, expires: 
-                new Date(Date.now() + 72 * 3600000) // expires in 8 hours
+                new Date(Date.now() + 72 * 3600000) // expires in 72 hours
             }); // secure: true, sameSite: "stict"
 
             res.status(200).json({ message: "Login successful" });

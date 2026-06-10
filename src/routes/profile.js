@@ -11,7 +11,7 @@ profileRouter.get("/profile/view", userAuth, async (req, res) => { // next() in 
 
     try {
         const loggedInUser = req.user;
-        res.send("real cookie user -- " + loggedInUser);
+        res.send(loggedInUser);
     } catch (error) {
         res.status(400).send("ERROR -- " + error.message);
     }

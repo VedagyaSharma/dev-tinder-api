@@ -30,7 +30,7 @@ const userAuth = async (req, res, next) => {
     try {
         console.log("userAuth middleware hit"); 
         console.log("next is:", next);
-        // Read the token fron request cookies / req.headers.authorization
+        // Read the token from request cookies / req.headers.authorization
         const token =
             req.cookies.token ||
             req.headers.authorization?.split(" ")[1];

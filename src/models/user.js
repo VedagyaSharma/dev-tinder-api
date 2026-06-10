@@ -52,7 +52,7 @@ const userSchema = new mongoose.Schema({
     gender: {
         type: String,
         enum: {
-            values: ["male", "feamle", "other"],
+            values: ["male", "female", "other"],
             message: `{VALUE} is not a valid gender type`
         },
         // can skip validate func now
@@ -104,6 +104,7 @@ userSchema.methods.getJWT = function () {
     const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
         expiresIn: "3d"
     });
+    
     return token;
 }
 

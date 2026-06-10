@@ -46,13 +46,15 @@ requestsRouter.post("/request/send/:status/:toUserId", userAuth, async (req, res
             ]
         });
 
+        
         if(existingConnectionRequest) {
             return res.status(400).json({
                 message: "Connection request already exists"
             })
         }
+        console.log("existing connection checked ... ");
 
-        // Upgrade 1: Replace “check + create/save” with ATOMIC operation
+        // Upgrade 1: Replace “check + create/save” with ATOMIC operation of findOneAndUpdate
 
         const connectionRequest = new ConnectionRequest({
             fromUserId,
@@ -61,7 +63,7 @@ requestsRouter.post("/request/send/:status/:toUserId", userAuth, async (req, res
         });
 
         const data = await connectionRequest.save();
-        console.log(" saving connection ")
+        console.log(" saving connection ");
 
         res.status(201).json({
             message: "connection reqauest sent successfully",

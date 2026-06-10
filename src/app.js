@@ -94,6 +94,6 @@ connectDB().then(() => {
     console.log("db connected successfully")
     app.listen(3000, () => console.log("running and listening at 3000"));
 })
-        .catch((err) => console.log("db cannot be connected"))
+    .catch((err) => console.log("db cannot be connected  ", err));
 
 
